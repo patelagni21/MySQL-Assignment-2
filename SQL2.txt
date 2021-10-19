@@ -1,0 +1,219 @@
+Query 1
+SELECT beer
+FROM Sells
+WHERE bar <> "Gecko Grill bar"
+GROUP BY beer;
+
+Hefeweizen
+Hefeweizen Doppelbock
+Original Premium Lager Dog
+Killian's
+Budweiser
+Stolichnaya Citrona
+Michelob Amber Bock
+Bud
+================================================================================================================================
+Query 2
+select distinct drinker, beer from Likes
+where beer in (Select beer from Likes where drinker = 'Justin')
+
+John Blue Moon
+Mike Blue Moon
+John Budweiser
+Mike Budweiser
+Justin Budweiser
+Justin Blue Moon
+================================================================================================================================
+Query 3
+SELECT distinct f.drinker, f.bar FROM Frequents f WHERE NOT EXISTS(SELECT * FROM Sells s, Likes l 
+WHERE l.drinker = f.drinker AND s.beer = l.beer AND f.bar = s.bar);
+
+Bob	Blue Angel
+Erik	Blue Angel
+Herb	Blue Angel
+Joe	Blue Angel
+John	Blue Angel
+Justin	Blue Angel
+Rebecca	Blue Angel
+Tom	Blue Angel
+Vince	Blue Angel
+Vince	Cabana
+Joe	Caravan
+Tom	Caravan
+Bob	Coconut Willie's Cocktail Lounge
+Joe	Coconut Willie's Cocktail Lounge
+Rebecca	Coconut Willie's Cocktail Lounge
+Rebecca	Gecko Grill
+Herb	Seven Bamboo
+Vince	Seven Bamboo
+Bob	The Blank Club
+Vince	Club 175
+Joe	Britannia Arms
+Tom	Giza Hookah Lounge
+================================================================================================================================
+Query 4
+SELECT DISTINCT Bars.name FROM  Bars LEFT  JOIN   Frequents  on Bars.name = Frequents.bar where Frequents.drinker NOT IN ('justin', 'Rebecca');
+
+A.P. Stump's
+Blue Angel
+Cabana
+Caravan
+Coconut Willie's Cocktail Lounge
+Seven Bamboo
+The Shark and Rose
+The Blank Club
+Club 175
+Brittania Arms
+Gize Hookah Lounge
+================================================================================================================================
+Query 5
+SELECT DISTINCT Drinkers.name FROM Drinkers INNER JOIN Likes ON Drinkers.name = Likes.drinker AND BEER IN
+(SELECT DISTINCT Likes.beer FROM Drinkers INNER JOIN Likes ON Drinkers.name = Likes.drinker );
+
+John
+Mike
+Vince
+Joe
+Jesse
+Justin
+================================================================================================================================
+Query 6
+SELECT bar 
+FROM Sells 
+GROUP BY bar 
+HAVING MIN(price)>=5;
+
+A.P. Stump's
+Blue Angel
+Blue Tattoo
+Brittania Arms
+Cabana
+Hedley Club
+The B Hive
+The Blank Club
+================================================================================================================================
+Query 7
+SELECT bar
+FROM Sells
+GROUP BY bar
+ORDER BY AVG(price) DESC LIMIT 1;
+
+Hedley Club
+================================================================================================================================
+Query 8
+SELECT bar, AVG(price) 
+FROM Sells 
+GROUP BY bar
+ORDER BY AVG(price) DESC;
+
+Hedley Club 6.75
+Britannia Arms 6.50
+Blue Tattoo 6.00
+A.P. Stump's 6.00
+Blue Angel 5.875
+The Blank Club 5.50
+Cabana 5.00
+The B-Hive 5.00
+The Shark and Rose 5.00
+Giza Hookah Lounge 4.625
+Gecko Grill 4.50
+Caravan 4.50
+Club 175 4.50
+Eulipia 4.50
+The Backbeat 3.50
+Coconut Willie's Cocktail Lounge 3.25
+Seven Bamboo 2.50
+================================================================================================================================
+Query 9
+SELECT name FROM Bars 
+WHERE name LIKE '% %';
+
+A.P. Stump's
+Blue Angel
+Blue Tattoo
+Britannia Arms
+Club 175
+Coconut Willie's Cocktail Lounge
+Gecko Grill
+Giza Hookah Lounge
+Hedley Club
+Il Fornaio
+Seven Bamboo
+The B-Hive
+The Backbeat
+The Blank Club
+The Shark and Rose
+================================================================================================================================
+Query 10
+SELECT drinker FROM Likes
+      GROUP BY drinker HAVING COUNT(beer) = (
+    SELECT MAX(a) FROM (
+        SELECT COUNT(beer) AS a FROM Likes GROUP BY drinker) b
+)
+
+Mike
+================================================================================================================================
+Query 11
+SELECT beer 
+FROM (SELECT beer, AVG(price) AS avg_price
+    FROM Sells 
+    GROUP BY beer) AS avg_beer
+WHERE avg_price = (SELECT MAX(avg_price) 
+    FROM (SELECT AVG(price) AS avg_price 
+        FROM Sells GROUP BY beer) AS avg_price);
+
+Hefeweizen
+================================================================================================================================
+Query 12
+SELECT bar FROM Sells WHERE beer = 'Bud' and price = 
+    ( SELECT MIN(price) FROM Sells WHERE beer = 'Bud' )
+;
+
+0 row(s) returned
+================================================================================================================================
+Query 13
+SELECT DISTINCT f.drinker
+FROM Frequents f LEFT JOIN
+    (SELECT g.drinker
+        FROM Frequents g, Sells s
+        WHERE g.bar = s.bar
+        AND s.beer = "Budweiser") a
+ON f.drinker = a.drinker WHERE a.drinker IS NULL;
+
+Erik
+Jesse
+================================================================================================================================
+Query 14
+SELECT  DISTINCT Beers.name from Beers LEFT JOIN Sells on Beers.name = Sells.beer LEFT JOIN Frequents ON Frequents.bar = Sells.bar WHERE Frequents.drinker != 'Mike';
+
+Hefeweizen Doppelback
+Original Premium Lager Dog
+Budweiser
+Bud
+Hefeweizen
+Stolichnaya Citrona
+================================================================================================================================
+Query 15
+SELECT DISTINCT 'Yes' AS 'nonempty'  
+    FROM Likes 
+    WHERE EXISTS(SELECT COUNT(l.drinker) 
+        FROM Likes l 
+        GROUP BY beer 
+        HAVING count(drinker) = (SELECT COUNT(l2.drinker)
+            FROM Likes l2))
+UNION
+SELECT DISTINCT 'No' AS 'nonempty'  
+    FROM Likes 
+    WHERE NOT EXISTS(SELECT COUNT(l.drinker) 
+        FROM Likes l 
+        GROUP BY beer 
+        HAVING count(drinker) = (SELECT COUNT(l2.drinker)
+            FROM Likes l2));
+
+No
+================================================================================================================================
+Query 16
+SELECT name FROM Beers
+WHERE name = 'Hefeweizen' UNION SELECT 'No such beer exists' AS name FROM Beers WHERE NOT EXISTS( SELECT * FROM Beers WHERE name = 'Hefeweizen')
+
+Hefeweizen
